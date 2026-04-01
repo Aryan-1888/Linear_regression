@@ -5,6 +5,7 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from sklearn.datasets import fetch_california_housing
+from sklearn.model_selection import train_test_split  # added
 
 from model import LinearRegression
 from metrics import mean_squared_error, r2_score
@@ -19,25 +20,21 @@ df['target'] = data.target
 X = df.drop('target', axis=1).values
 Y = df['target'].values
 
-# 🔥 1. Shuffle data
-indices = np.arange(len(X))
-np.random.shuffle(indices)
-X = X[indices]
-Y = Y[indices]
+# 🔥 1. Data will be shuffled during train-test split
 
-# 🔥 2. Add LOG features (safe improvement)
-X_log = np.log1p(np.abs(X))   # safe log transform
+# 🔥 2. Add LOG features
+X_log = np.log1p(np.abs(X))
 X = np.concatenate((X, X_log), axis=1)
 
-# 🔥 3. Standardization (VERY IMPORTANT)
+# 🔥 3. Standardization
 X = (X - X.mean(axis=0)) / (X.std(axis=0) + 1e-8)
 
 # 🔥 4. Train-test split
-split = int(0.8 * len(X))
-X_train, X_test = X[:split], X[split:]
-Y_train, Y_test = Y[:split], Y[split:]
+X_train, X_test, Y_train, Y_test = train_test_split(
+    X, Y, test_size=0.2, random_state=42
+)
 
-# 🔥 5. Train model (stable config)
+# 🔥 5. Train model
 model = LinearRegression(lr=0.01, epochs=3000)
 model.fit(X_train, Y_train)
 
